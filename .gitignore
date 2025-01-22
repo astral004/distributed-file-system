@@ -1,3 +1,5 @@
 file_chunks/*
 venv/*
 example_large_file.txt
+data/*
+__pycache__/*
