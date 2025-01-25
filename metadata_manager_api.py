@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from metadata_manager import MetadataManager
+from utils.metadata_manager import MetadataManager
 
 # Initialize Flask app and MetadataManager
 app = Flask(__name__)
