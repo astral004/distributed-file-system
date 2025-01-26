@@ -37,23 +37,21 @@ def upload_file():
 
         # Partition file
         chunks = partition_file(file_name, output_dir, chunk_size)
-
+        chunk_id_list = []
         # Distribute chunks to workers
-        for chunk_id in chunks:
+        for chunk_id, chunk in chunks.items():
             worker_url = get_least_loaded_worker()
-            chunk_path = os.path.join(output_dir, chunk_id)
-            # with open(chunk_path, 'rb') as f:
             response = requests.post(
                 url=f"{worker_url}/store_chunk",
-                files={'file': (chunk_path, open(chunk_path, 'rb'), 'multipart/form-data')},
+                data=chunk,
                 params={"chunk_id": chunk_id}
             )
             if response.status_code != 200:
                 raise Exception(f"Failed to upload chunk {chunk_id} to {worker_url}.")
-            os.remove(chunk_path)
+            chunk_id_list.append(chunk_id)
 
         # Update metadata
-        metadata_manager.add_file(file_name, chunks, file_size)
+        metadata_manager.add_file(file_name, chunk_id_list, file_size)
 
         return jsonify({"status": "success", "message": f"File {file_name} uploaded."}), 200
     except Exception as e:
@@ -67,13 +65,12 @@ def download_file(file_name):
         metadata = metadata_manager.get_file_metadata(file_name)
         if not metadata:
             return jsonify({"status": "error", "message": "File not found."}), 404
-        
+        os.makedirs("./downloadedFile", exist_ok=True)
         worker_url = get_least_loaded_worker()
-
         for chunk_id in metadata["chunk_ids"]:
             response = requests.get(f"{worker_url}/get_chunk/{chunk_id}", stream=True)
             with open(f"./downloadedFile/{file_name}", "ab") as fullFile:
-                for chunk in response.iter_content(chunk_size=8192):
+                for chunk in response.iter_content(chunk_size=40 * 1024 * 1024):
                     fullFile.write(chunk)
 
         return send_file(f"./downloadedFile/{file_name}", as_attachment=True)

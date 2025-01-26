@@ -15,14 +15,13 @@ START_TIME = time.time()
 def store_chunk():
     """Store a file chunk received from the Master Node."""
     try:
-        chunk = request.files["file"]
+        chunk = request.data
         chunk_id = request.args.get("chunk_id")
         print('reached')
         chunk_path = os.path.join(CHUNK_STORAGE_PATH, chunk_id)
-        data = chunk.read()
         with open(chunk_path, "wb") as f:
             print('reached')
-            f.write(data)
+            f.write(chunk)
 
         return jsonify({"status": "success", "message": f"Chunk {chunk_id} stored successfully."}), 200
     except Exception as e:
@@ -37,7 +36,7 @@ def get_chunk(chunk_id):
         if os.path.exists(chunk_path):
             return send_file(chunk_path, as_attachment=True)
         else:
-            return jsonify({"status": "error", "message": "Chunk not found."}), 404
+            return jsonify({"status": "error", "message": f"{chunk_path} not found."}), 404
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 

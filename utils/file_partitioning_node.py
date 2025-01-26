@@ -18,20 +18,20 @@ def partition_file(input_file, output_dir, chunk_size=64 * 1024 * 1024):
     # Extract file name for chunk naming
     base_name = os.path.basename(input_file)
     chunk_index = 0
-    chunk_list = list()
+    chunk_list = dict()
 
     print(f"Partitioning file: {input_file}")
     with open(input_file, 'rb') as file:
         while chunk := file.read(chunk_size):
             chunk_filename = f"{base_name}_chunk_{chunk_index}"
-
-            chunk_path = os.path.join(output_dir, chunk_filename)
-            with open(chunk_path, 'wb') as chunk_file:
-                chunk_file.write(chunk)
+            chunk_list[chunk_filename] = chunk
+            # chunk_path = os.path.join(output_dir, chunk_filename)
+            # with open(chunk_path, 'wb') as chunk_file:
+            #     chunk_file.write(chunk)
             
-            print(f"Created chunk: {chunk_path} ({len(chunk)} bytes)")
+            # print(f"Created chunk: {chunk_path} ({len(chunk)} bytes)")
+            # chunk_list.append(chunk_filename)
             chunk_index += 1
-            chunk_list.append(chunk_filename)
     
     print(f"File successfully partitioned into {chunk_index} chunks.")
     return chunk_list
