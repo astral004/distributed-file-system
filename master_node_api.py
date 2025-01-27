@@ -65,6 +65,10 @@ def download_file(file_name):
         metadata = metadata_manager.get_file_metadata(file_name)
         if not metadata:
             return jsonify({"status": "error", "message": "File not found."}), 404
+        
+        if os.path.isfile(f"./downloadedFile/{file_name}"):
+          os.remove(f"./downloadedFile/{file_name}")
+
         os.makedirs("./downloadedFile", exist_ok=True)
         worker_url = get_least_loaded_worker()
         for chunk_id in metadata["chunk_ids"]:
